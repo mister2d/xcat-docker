@@ -37,6 +37,7 @@ RUN apt-get update && apt-get install -y \
             ln -s ../sites-available/default-ssl.conf  /etc/apache2/sites-enabled/ssl.conf; \
             [ -e "/etc/ssh/sshd_config" ] \
             && sed -i 's/PermitRootLogin without-password/PermitRootLogin yes/' /etc/ssh/sshd_config ;\
+            sed -i 's/#UseDNS yes/UseDNS no/' /etc/ssh/sshd_config ;\
             echo "root:cluster" | chpasswd ; \
             touch /etc/NEEDINIT 
     
