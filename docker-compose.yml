@@ -3,7 +3,7 @@ version: '2'
 services:
   xcatmn:
     #the xCAT docker image name and tag, with format [xCAT docker image name]:[tag]
-    image: xcat/xcat-ubuntu-x86_64:dev 
+    image: schwarzwald/xcat-docker:latest 
     #container name, seen by Docker host
     container_name: xcatmn
     #the hostname of the container, seen by container itself 
