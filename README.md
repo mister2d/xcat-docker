@@ -7,6 +7,6 @@ xCAT is Extreme Cluster/Cloud Administration Toolkit, xCAT offers complete manag
    * Remotely manage systems: lights-out management, remote console, and distributed shell support.
    * Quickly configure and control management node services: DNS, HTTP, DHCP, TFTP, NFS.
 
-[![](https://images.microbadger.com/badges/image/xcat/xcat-ubuntu-x86_64.svg)](http://microbadger.com/images/xcat/xcat-ubuntu-x86_64 "Get your own image badge on microbadger.com")
+[![](https://images.microbadger.com/badges/image/schwarzwald/xcat-docker.svg)](https://microbadger.com/images/schwarzwald/xcat-docker "Get your own image badge on microbadger.com")
 
-[![](https://images.microbadger.com/badges/version/xcat/xcat-ubuntu-x86_64.svg)](http://microbadger.com/images/xcat/xcat-ubuntu-x86_64 "Get your own version badge on microbadger.com")
+[![](https://images.microbadger.com/badges/version/schwarzwald/xcat-docker.svg)](https://microbadger.com/images/schwarzwald/xcat-docker "Get your own version badge on microbadger.com")
