@@ -24,9 +24,9 @@ RUN yum clean all && yum install -y \
 	    iproute \
         less \
         openssh-server \
-	    rsyslog \
+        rsyslog \
         wget; \
-	    wget -O - \
+        wget -O - \
         "https://raw.githubusercontent.com/xcat2/xcat-core/master/xCAT-server/share/xcat/tools/go-xcat" \
         >/tmp/go-xcat ; \
         chmod +x /tmp/go-xcat ; \
