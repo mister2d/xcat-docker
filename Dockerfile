@@ -1,9 +1,11 @@
+
 FROM centos:latest
 
 MAINTAINER drdukes@gmail.com
 
 VOLUME ["/install","/var/log/xcat/","/sys/fs/cgroup"]
 
+ENV container docker
 COPY startservice-centos.sh /bin/startservice.sh 
 COPY patch.bin.stop /sbin/stop
 COPY motd /etc/motd
