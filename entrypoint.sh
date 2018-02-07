@@ -7,44 +7,26 @@
 
 . /etc/profile.d/xcat.sh
 
-#clusterdomain=
-#clusterdomain_def="clusters.com"
-#while [ "$#" -gt "0" ] ; do
-#    case "$1" in
-#        "--clusterdomain")
-#            shift;
-#            [ "${1:0:1}" != "-" ] && echo "$1 llllzzzz"
-#            [ -n "$1" ] && [ "${1:0:1}" != "-" ] && clusterdomain="$1" && shift  
-#            ;;
-#        *)
-#            [ -n "$1" ] && [ "${1:0:1}" != "-" ] && break
-#            ;;
-#    esac
-#done
-#
-#[ -z "$clusterdomain" ] && ( echo "--clusterdomain not specified, default to \"$clusterdomain_def\""; clusterdomain="$clusterdomain_def" )
-
-
 #verify whether $DST is bind mount from $SRC
-function isBINDMOUNT {
-    local SRC=$1
-    local DST=$2
-    SRC=$(echo "$SRC" | sed -r 's/\/$//')
-    findmnt -n $DST | awk -F' ' '{print $2}' | grep -E "\[.*$SRC\]" >/dev/null 2>&1 && return 0
-    return 1
-}
+#function isBINDMOUNT {
+#    local SRC=$1
+#    local DST=$2
+#    SRC=$(echo "$SRC" | sed -r 's/\/$//')
+#    findmnt -n $DST | awk -F' ' '{print $2}' | grep -E "\[.*$SRC\]" >/dev/null 2>&1 && return 0
+#    return 1
+#}
 
 
-mkdir -p /install/postscripts/ && \
-     isBINDMOUNT /opt/xcat/postscripts/  /install/postscripts/ || \
-     mount -o bind /opt/xcat/postscripts/ /install/postscripts/
+#mkdir -p /install/postscripts/ && \
+#     isBINDMOUNT /opt/xcat/postscripts/  /install/postscripts/ || \
+#     mount -o bind /opt/xcat/postscripts/ /install/postscripts/
+#
+#
+#mkdir -p /install/prescripts/ && \
+#     isBINDMOUNT /opt/xcat/prescripts/  /install/prescripts/ || \
+#     mount -o bind /opt/xcat/prescripts/ /install/prescripts/
 
-
-mkdir -p /install/prescripts/ && \
-     isBINDMOUNT /opt/xcat/prescripts/  /install/prescripts/ || \
-     mount -o bind /opt/xcat/prescripts/ /install/prescripts/
-
-chown -R syslog:adm /var/log/xcat/ 
+chown -R root: /var/log/xcat/ 
      
 #/dev/loop0 and /dev/loop1 will be occupiered by docker by default
 #create a loop device if there is no free loop device inside contanier
@@ -54,30 +36,20 @@ losetup -f >/dev/null 2>&1 || (
   mknod /dev/loop$[maxloopidx+1] -m0660 b 7 $[maxloopidx+1] && echo "no free loop device inside container,created a new loop device /dev/loop$[maxloopidx+1]..."
 )
 
-#mkdir -p /install/winpostscripts/ && \
-#     isBINDMOUNT opt/xcat/winpostscripts/  /install/winpostscripts/ && \
-#     mount -o bind /opt/xcat/winpostscripts/ /install/winpostscripts/
-
-echo "restarting apache2 service..."
-service apache2 restart
+echo "restarting http service..."
+systemctl start httpd.service
 
 echo "restarting ssh service..."
-service ssh restart
+systemctl start sshd.service
 
-echo "restarting isc-dhcp-server service..."
-service isc-dhcp-server restart
+echo "restarting dhcpd service..."
+systemctl start dhcpd.service
 
 echo "restarting rsyslog service..."
-service rsyslog restart
+systemctl start rsyslog.service
 
 echo "restarting xcatd service..."
-service xcatd restart
-
-
-#MYIP=$(ip -o -4 addr show dev eth0 2>/dev/null |grep eth0|awk -F' ' '{print $4}'|sed -e 's/\/.*//')
-#MYHOSTNAME=$(hostname)
-# 
-#([ -n "$MYIP" ] && [ -n "$MYHOSTNAME" ]) && sed -i -e "/\<$MYHOSTNAME\>/d" /etc/hosts && echo "$MYHOSTNAME.$clusterdomain $MYHOSTNAME $MYIP" >> /etc/hosts
+systemctl start xcatd.service
 
 if [ -e "/etc/NEEDINIT"  ]; then
     echo "initializing xCAT Tables..."

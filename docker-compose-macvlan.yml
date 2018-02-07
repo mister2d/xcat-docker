@@ -3,13 +3,10 @@ version: '2'
 services:
   xcatmn:
     #the xCAT docker image name and tag, with format [xCAT docker image name]:[tag]
-    image: schwarzwald/xcat-docker:50fa1
-    #container name, seen by Docker host
-    container_name: xcatmn
-    #the hostname of the container, seen by container itself 
-    hostname: xcatmn
-    #previleged mode
-    privileged: true
+    image: schwarzwald/xcat-docker
+    #Needed to run as systemd service. Otherwise will freeze upon startup.
+    cap_add:
+      - SYS_ADMIN
     #tty enable
     tty: true
     #stdin enable
@@ -33,24 +30,23 @@ services:
     volumes:
       #the "/install" volume is used to keep user data in xCAT,
       #such as osimage resources
-      - /data/xcat/data/:/install
+      - xcat-install:/install
       #the "/.dbbackup" volume is used to backup and restore xCAT DB tables
       #Dockerized xCAT will restore xCAT DB tables if specified
       #"dumpxCATdb -p /.dbbackup" should be run manually to save xCAT DB inside container
-      - /data/xcat/data/.dbbackup:/.dbbackup
+      - xcat-dbbackup:/.dbbackup
       #the "/var/log/xcat/" volume is used to keep xCAT logs
-      - /data/xcat/data/.logs:/var/log/xcat/
-      #To get systemd running in Docker for CentOS.
-      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+      - xcat-logs:/var/log/xcat
+      #tftpboot generated files
+      - xcat-tftpboot:/tftpboot
+
+volumes:
+  xcat-install:
+  xcat-dbbackup:
+  xcat-logs:
+  xcat-tftpboot:
 
 networks:
-   
-  #externalnet:
-  #  external:
-  #    name: mgtnet
-  
-  #management network, attached to the network interface on Docker host 
-  #facing the nodes to provision
   mgtnet:
     driver: "macvlan"
     driver_opts:
@@ -62,7 +58,7 @@ networks:
           #the subnet of the bridge network in CIDR format
           #should be exactly the same as the network configuration of network interface 
           #attached to the bridge
-        - subnet: 10.0.3.0/26
+        - subnet: 10.0.3.0/24
           #the IP address of the bridge, should be exactly the same as the IP address of 
           #network interface attached to the bridge
           gateway: 10.0.3.1
@@ -82,7 +78,7 @@ networks:
           #the subnet of the bridge network in CIDR format
           #should be exactly the same as the network configuration of network interface 
           #attached to the bridge
-        - subnet: 10.0.4.0/26
+        - subnet: 10.0.4.0/24
           #the IP address of the bridge, should be exactly the same as the IP address of 
           #network interface attached to the bridge
           gateway: 10.0.4.1
