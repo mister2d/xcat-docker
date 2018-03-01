@@ -7,42 +7,24 @@
 
 . /etc/profile.d/xcat.sh
 
-#clusterdomain=
-#clusterdomain_def="clusters.com"
-#while [ "$#" -gt "0" ] ; do
-#    case "$1" in
-#        "--clusterdomain")
-#            shift;
-#            [ "${1:0:1}" != "-" ] && echo "$1 llllzzzz"
-#            [ -n "$1" ] && [ "${1:0:1}" != "-" ] && clusterdomain="$1" && shift  
-#            ;;
-#        *)
-#            [ -n "$1" ] && [ "${1:0:1}" != "-" ] && break
-#            ;;
-#    esac
-#done
-#
-#[ -z "$clusterdomain" ] && ( echo "--clusterdomain not specified, default to \"$clusterdomain_def\""; clusterdomain="$clusterdomain_def" )
-
-
 #verify whether $DST is bind mount from $SRC
-function isBINDMOUNT {
-    local SRC=$1
-    local DST=$2
-    SRC=$(echo "$SRC" | sed -r 's/\/$//')
-    findmnt -n $DST | awk -F' ' '{print $2}' | grep -E "\[.*$SRC\]" >/dev/null 2>&1 && return 0
-    return 1
-}
+#function isBINDMOUNT {
+#    local SRC=$1
+#    local DST=$2
+#    SRC=$(echo "$SRC" | sed -r 's/\/$//')
+#    findmnt -n $DST | awk -F' ' '{print $2}' | grep -E "\[.*$SRC\]" >/dev/null 2>&1 && return 0
+#    return 1
+#}
 
 
-mkdir -p /install/postscripts/ && \
-     isBINDMOUNT /opt/xcat/postscripts/  /install/postscripts/ || \
-     mount -o bind /opt/xcat/postscripts/ /install/postscripts/
-
-
-mkdir -p /install/prescripts/ && \
-     isBINDMOUNT /opt/xcat/prescripts/  /install/prescripts/ || \
-     mount -o bind /opt/xcat/prescripts/ /install/prescripts/
+#mkdir -p /install/postscripts/ && \
+#     isBINDMOUNT /opt/xcat/postscripts/  /install/postscripts/ || \
+#     mount -o bind /opt/xcat/postscripts/ /install/postscripts/
+#
+#
+#mkdir -p /install/prescripts/ && \
+#     isBINDMOUNT /opt/xcat/prescripts/  /install/prescripts/ || \
+#     mount -o bind /opt/xcat/prescripts/ /install/prescripts/
 
 chown -R root: /var/log/xcat/ 
      
@@ -54,30 +36,26 @@ losetup -f >/dev/null 2>&1 || (
   mknod /dev/loop$[maxloopidx+1] -m0660 b 7 $[maxloopidx+1] && echo "no free loop device inside container,created a new loop device /dev/loop$[maxloopidx+1]..."
 )
 
-#mkdir -p /install/winpostscripts/ && \
-#     isBINDMOUNT opt/xcat/winpostscripts/  /install/winpostscripts/ && \
-#     mount -o bind /opt/xcat/winpostscripts/ /install/winpostscripts/
+echo "restarting dns service..."
+service named start
 
 echo "restarting http service..."
-systemctl start httpd.service
+service httpd start
 
 echo "restarting ssh service..."
-systemctl start sshd.service
+service sshd start
 
 echo "restarting dhcpd service..."
-systemctl start dhcpd.service
+service dhcpd start
 
 echo "restarting rsyslog service..."
-systemctl start rsyslog.service
+service rsyslog start
 
 echo "restarting xcatd service..."
-systemctl start xcatd.service
+service xcatd start
 
-
-#MYIP=$(ip -o -4 addr show dev eth0 2>/dev/null |grep eth0|awk -F' ' '{print $4}'|sed -e 's/\/.*//')
-#MYHOSTNAME=$(hostname)
-# 
-#([ -n "$MYIP" ] && [ -n "$MYHOSTNAME" ]) && sed -i -e "/\<$MYHOSTNAME\>/d" /etc/hosts && echo "$MYHOSTNAME.$clusterdomain $MYHOSTNAME $MYIP" >> /etc/hosts
+echo "restarting ntp service..."
+service ntp start
 
 if [ -e "/etc/NEEDINIT"  ]; then
     echo "initializing xCAT Tables..."

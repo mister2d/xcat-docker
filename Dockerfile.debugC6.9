@@ -1,0 +1,33 @@
+FROM centos:6.9
+SHELL [ "bash", "-c" ]
+
+LABEL maintainer="Dana Dukes <drdukes@gmail.com>"
+
+ADD motd /etc/motd
+ADD https://github.com/krallin/tini/releases/download/v0.17.0/tini-amd64 /sbin/tini
+
+RUN yum install -y \
+        bind-utils \
+        iproute \
+        less \
+        openssh-server \
+        ntp \
+        rsyslog \
+        wget \
+        yum-plugin-ovl && \
+    yum clean all && \
+    bash <( curl -L https://raw.githubusercontent.com/xcat2/xcat-core/master/xCAT-server/share/xcat/tools/go-xcat ) --yes install && \
+    sed -i -e 's|#PermitRootLogin yes|PermitRootLogin yes|g' \
+           -e 's|#UseDNS yes|UseDNS no|g' /etc/ssh/sshd_config && \
+    echo "root:cluster" | chpasswd && \
+    chmod +x /sbin/tini && \
+    touch /etc/NEEDINIT
+
+ADD entrypointC6.9.sh /bin/entrypoint.sh
+
+EXPOSE 80 22 22/udp 66 67 67/udp 68 68/udp 69 69/udp 53 53/udp 80 111 514 2049 20048 3001 3001/udp 3002 3002/udp 4011 33387 36995
+
+VOLUME [ "/install", "/tftpboot", "/var/log/xcat" ]
+
+ENTRYPOINT [ "/sbin/tini", "--" ]
+CMD [ "entrypoint.sh" ]
